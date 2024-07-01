@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
 import {
+  KeyboardAvoidingView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -12,9 +13,9 @@ const Background = ({ children }: Props) => (
   <View
     style={styles.background}
   >
-    <View style={styles.container} >
+    <KeyboardAvoidingView style={styles.container} behavior="padding">
       {children}
-    </View>
+    </KeyboardAvoidingView>
   </View>
 );
 
