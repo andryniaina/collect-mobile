@@ -1,4 +1,4 @@
-import React, {memo, useEffect, useState} from 'react';
+import React, {memo, useCallback, useEffect, useState} from 'react';
 import Background from '../components/Background';
 import Logo from '../components/Logo';
 import Header from '../components/Header';
@@ -6,6 +6,7 @@ import Button from '../components/Button';
 import {Navigation} from '../types';
 import {fetchFormsFromServerAndDownload} from '../services/forms';
 import {useQueryClient} from '@tanstack/react-query';
+import { connectToDatabase } from '../config/sqlite/db';
 
 type Props = {
   navigation: Navigation;

@@ -6,7 +6,6 @@ import InputField from "../components/InputField";
 import { useLocalForms } from '../services/forms/forms.hooks'; 
 import { Navigation } from '../types';
 import Button from '../components/Button';
-import DatePicker from '../components/DatePicker';
 
 interface Props {
     navigation: Navigation,
