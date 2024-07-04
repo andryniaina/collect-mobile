@@ -1,36 +1,58 @@
-import React, {memo, useCallback, useEffect, useState} from 'react';
-import Background from '../components/Background';
-import Logo from '../components/Logo';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import {Navigation} from '../types';
-import {fetchFormsFromServerAndDownload} from '../services/forms';
-import {useQueryClient} from '@tanstack/react-query';
-import { connectToDatabase } from '../config/sqlite/db';
+import React, { memo, useCallback, useEffect, useState } from "react";
+import Background from "../components/Background";
+import Logo from "../components/Logo";
+import Header from "../components/Header";
+import Button from "../components/Button";
+import { Navigation } from "../types";
+import { fetchFormsFromServerAndDownload } from "../services/forms";
+import { useQueryClient } from "@tanstack/react-query";
+import { getFormDatasDraft } from "../services/formDatas";
 
 type Props = {
-  navigation: Navigation;
+  navigation: any;
+  route:any;
 };
 
-const Dashboard = ({navigation}: Props) => {
+const Dashboard = ({ navigation,route }: Props) => {
+
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const fetchForms = async () => {
     setIsLoading(true);
     await fetchFormsFromServerAndDownload();
-    queryClient.invalidateQueries({queryKey: ['localForms']}); // Invalidate the cache
+    queryClient.invalidateQueries({ queryKey: ["localForms"] }); // Invalidate the cache
     setIsLoading(false);
   };
+
+  const fetchFormDatas = async () => {
+    setIsLoading(true);
+    await getFormDatasDraft();
+    queryClient.invalidateQueries({ queryKey: ["localFormDatas"] }); // Invalidate the cache
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchFormDatas();
+  }, []);
 
   return (
     <Background>
       <Logo />
       <Header>Let’ start</Header>
-      <Button mode="outlined" onPress={() => navigation.navigate('BlankForms')}>
+      <Button mode="outlined" onPress={() => navigation.navigate("BlankForms",{status:"fill"})}>
         Fill forms
       </Button>
-      <Button mode="outlined" onPress={() => navigation.navigate('HomeScreen')}>
+      <Button
+        mode="outlined"
+        onPress={() => navigation.navigate("BlankForms",{status:"draft"})}
+      >
+        Drafts
+      </Button>
+      <Button mode="outlined" onPress={() => navigation.navigate("BlankForms")}>
+        Sent
+      </Button>
+      <Button mode="outlined" onPress={() => navigation.navigate("HomeScreen")}>
         Send forms data
       </Button>
       <Button mode="outlined" loading={isLoading} onPress={fetchForms}>

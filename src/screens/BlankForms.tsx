@@ -5,12 +5,18 @@ import {useLocalForms} from '../services/forms/forms.hooks';
 import {Text} from 'react-native-paper';
 import {FlashList} from '@shopify/flash-list';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import { useLocalFormDatas } from '../services/formDatas/formDatas.hook';
+
 type Props = {
   navigation: any;
+  route: any
 };
 
-const Dashboard = ({navigation}: Props) => {
+const Dashboard = ({navigation,route}: Props) => {
   const {data: forms, isLoading, error} = useLocalForms();
+  const {data: formDatas} = useLocalFormDatas();
+  const status = route.params.status;
+  let formsValue;
 
   if (isLoading) {
     return <Text>Loading...</Text>;
@@ -20,16 +26,22 @@ const Dashboard = ({navigation}: Props) => {
     return <Text>Error loading forms: {error.message}</Text>;
   }
 
+  if (status==="fill") {
+    formsValue = forms;
+  }else if (status==="draft") {
+    formsValue = formDatas;
+  }
+
   const handleFormPress = (formId: string) => {
-    navigation.navigate('FormPage', {formId});
+    navigation.navigate('FormPage', {formId,status});
   };
 
   return (
     <Background>
       <View style={styles.container}>
         <FlashList
-          data={forms}
-          keyExtractor={item => item._id}
+          data={formsValue}
+          keyExtractor={(item:any) => item._id}
           renderItem={({item}) => (
             <TouchableOpacity onPress={() => handleFormPress(item._id)}>
               <View style={styles.itemContainer}>

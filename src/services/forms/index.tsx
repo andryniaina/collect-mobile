@@ -1,8 +1,7 @@
 import axios from 'axios';
 import {Form} from '../../interfaces/forms.interface';
 import {BACKEND_URL} from '../../../app.config';
-import { connectToDatabase,insertFormToDatabase,getAllFormToDatabase } from '../../config/sqlite/db';
-import { useDBContext } from '../provider/DbProvider';
+import {insertFormToDatabase,getAllFormToDatabase } from '../../config/sqlite/db';
 
 
 
