@@ -6,7 +6,7 @@ import Button from "../components/Button";
 import { Navigation } from "../types";
 import { fetchFormsFromServerAndDownload } from "../services/forms";
 import { useQueryClient } from "@tanstack/react-query";
-import { getFormDatasDraft } from "../services/formDatas";
+import { getFormDatasDraft, getFormDatasPreSend, getFormDatasSent } from "../services/formDatas";
 
 type Props = {
   navigation: any;
@@ -32,8 +32,24 @@ const Dashboard = ({ navigation,route }: Props) => {
     setIsLoading(false);
   };
 
+  const fetchFormReadyDatas = async () => {
+    setIsLoading(true);
+    await getFormDatasPreSend();
+    queryClient.invalidateQueries({ queryKey: ["localFormReadyDatas"] }); // Invalidate the cache
+    setIsLoading(false);
+  };
+
+  const fetchFormSentDatas = async () => {
+    setIsLoading(true);
+    await getFormDatasSent();
+    queryClient.invalidateQueries({ queryKey: ["localFormSentDatas"] }); // Invalidate the cache
+    setIsLoading(false);
+  };
+
   useEffect(() => {
     fetchFormDatas();
+    fetchFormReadyDatas();
+    fetchFormSentDatas();
   }, []);
 
   return (
@@ -49,10 +65,10 @@ const Dashboard = ({ navigation,route }: Props) => {
       >
         Drafts
       </Button>
-      <Button mode="outlined" onPress={() => navigation.navigate("BlankForms")}>
+      <Button mode="outlined" onPress={() => navigation.navigate("BlankForms",{status:"sent"})}>
         Sent
       </Button>
-      <Button mode="outlined" onPress={() => navigation.navigate("HomeScreen")}>
+      <Button mode="outlined" onPress={() => navigation.navigate("BlankForms",{status:"ready"})}>
         Send forms data
       </Button>
       <Button mode="outlined" loading={isLoading} onPress={fetchForms}>

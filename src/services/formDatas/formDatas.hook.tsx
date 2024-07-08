@@ -1,5 +1,5 @@
 import {useQuery} from '@tanstack/react-query';
-import {getFormDatasDraft} from './index';
+import {getFormDatasDraft,getFormDatasPreSend,getFormDatasSent} from './index';
 
 const useLocalFormDatas = () => {
   return useQuery({
@@ -8,4 +8,16 @@ const useLocalFormDatas = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
-export {useLocalFormDatas};
+const useLocalFormReadyDatas = () => {
+  return useQuery({
+    queryKey: ['localFormReadyDatas'],
+    queryFn: getFormDatasPreSend,
+  });
+};
+const useLocalFormSentDatas = () => {
+  return useQuery({
+    queryKey: ['localFormSentDatas'],
+    queryFn: getFormDatasSent,
+  });
+};
+export {useLocalFormDatas,useLocalFormReadyDatas,useLocalFormSentDatas};

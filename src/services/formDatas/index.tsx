@@ -1,4 +1,7 @@
 import { getFormDataToDatabaseByStatus } from "../../config/sqlite/db";
+import axios from "axios";
+import { Form } from "../../interfaces/forms.interface";
+import { BACKEND_URL } from "../../../app.config";
 
 const getFormDatasDraft = async () => {
   try {
@@ -11,7 +14,7 @@ const getFormDatasDraft = async () => {
 
 const getFormDatasPreSend = async () => {
   try {
-    const response = await getFormDataToDatabaseByStatus("draft");
+    const response = await getFormDataToDatabaseByStatus("ready");
     return response;
   } catch (error) {
     console.error("Error fetching forms from server:", error);
@@ -20,11 +23,25 @@ const getFormDatasPreSend = async () => {
 
 const getFormDatasSent = async () => {
   try {
-    const response = await getFormDataToDatabaseByStatus("draft");
+    const response = await getFormDataToDatabaseByStatus("sent");
     return response;
   } catch (error) {
     console.error("Error fetching forms from server:", error);
   }
 };
 
-export { getFormDatasDraft, getFormDatasPreSend, getFormDatasSent };
+const sendFormsDataToServer = async (form:any) => {
+  try {
+    const response = await axios.post(`${BACKEND_URL}/submissions`,form);
+    return response;
+  } catch (error:any) {
+    console.error("Error sending forms from server:",error.message);
+  }
+};
+
+export {
+  getFormDatasDraft,
+  getFormDatasPreSend,
+  getFormDatasSent,
+  sendFormsDataToServer,
+};
