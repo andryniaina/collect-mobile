@@ -1,7 +1,7 @@
 import { getFormDataToDatabaseByStatus } from "../../config/sqlite/db";
 import axios from "axios";
 import { Form } from "../../interfaces/forms.interface";
-import { BACKEND_URL } from "../../../app.config";
+import { BACKEND_URL } from "../../config/app.config";
 
 const getFormDatasDraft = async () => {
   try {
