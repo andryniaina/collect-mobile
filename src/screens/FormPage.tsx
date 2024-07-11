@@ -9,6 +9,7 @@ import Button from "../components/Button";
 import { insertFormDataToDatabase } from "../config/sqlite/db";
 import { useLocalFormDatas } from "../services/formDatas/formDatas.hook";
 import uuid from "react-native-uuid";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
   navigation: Navigation;
@@ -21,6 +22,7 @@ const FormPage = ({ navigation, route }: Props) => {
   const status = route.params.status;
   const { data: forms } = useLocalForms(); // Fetch forms from local cache
   const { data: formData } = useLocalFormDatas();
+  const queryClient = useQueryClient();
 
   let selectedForm: any;
   if (status === "fill") {
@@ -47,6 +49,8 @@ const FormPage = ({ navigation, route }: Props) => {
     }else if (status==="draft") {
       await onSaveDraft();
     }
+    queryClient.invalidateQueries({ queryKey: ["localFormDatas"] });
+    navigation.navigate("Dashboard");
   };
 
   const handleReadyToSave = async (formId: string) => {
@@ -56,6 +60,7 @@ const FormPage = ({ navigation, route }: Props) => {
     }else if (status==="draft") {
       await onReadyToSend();
     }
+    navigation.navigate("Dashboard");
   };
 
   const onSaveFill = async (formId: string) => {
