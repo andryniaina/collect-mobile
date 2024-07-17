@@ -9,6 +9,7 @@ import BackButton from '../components/BackButton';
 import {theme} from '../core/theme';
 import {emailValidator, passwordValidator} from '../core/utils';
 import {Navigation} from '../types';
+import { login } from '../services/users';
 
 type Props = {
   navigation: Navigation;
@@ -18,17 +19,18 @@ const LoginScreen = ({navigation}: Props) => {
   const [email, setEmail] = useState({value: '', error: ''});
   const [password, setPassword] = useState({value: '', error: ''});
 
-  const _onLoginPressed = () => {
-/*     const emailError = emailValidator(email.value);
-    const passwordError = passwordValidator(password.value);
-
-    if (emailError || passwordError) {
-      setEmail({...email, error: emailError});
-      setPassword({...password, error: passwordError});
-      return;
-    } */
-
-    navigation.navigate('Dashboard');
+  const _onLoginPressed = async() => {
+    const user = {
+      "username": email.value,
+      "password": password.value
+    };
+    const response = await login(user)
+    if(response?.status===200){
+      navigation.navigate('Dashboard');
+    }else{
+      setEmail({value:"",error:"Credential error"});
+      setPassword({value:"",error:"Credential error"});
+    }
   };
 
   return (
