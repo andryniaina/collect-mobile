@@ -1,89 +1,111 @@
-import React, { memo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Background from '../components/Background';
-import Logo from '../components/Logo';
-import Header from '../components/Header';
-import Button from '../components/Button';
-import TextInput from '../components/TextInput';
-import BackButton from '../components/BackButton';
-import { theme } from '../core/theme';
-import { Navigation } from '../types';
+import React, { memo, useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import Background from "../components/Background";
+import Logo from "../components/Logo";
+import Header from "../components/Header";
+import Button from "../components/Button";
+import TextInput from "../components/TextInput";
+import BackButton from "../components/BackButton";
+import { theme } from "../core/theme";
+import { login,updateUser } from '../services/users';
+
 import {
   emailValidator,
   passwordValidator,
   nameValidator,
-} from '../core/utils';
+} from "../core/utils";
 
 type Props = {
-  navigation: Navigation;
+  navigation: any;
+  route: any;
 };
 
-const RegisterScreen = ({ navigation }: Props) => {
-  const [name, setName] = useState({ value: '', error: '' });
-  const [email, setEmail] = useState({ value: '', error: '' });
-  const [password, setPassword] = useState({ value: '', error: '' });
+const RegisterScreen = ({ navigation, route }: Props) => {
+  const [password, setPassword] = useState({ value: "", error: "" });
+  const [npassword, setnPassword] = useState({ value: "", error: "" });
+  const [cnpassword, setCnPassword] = useState({ value: "", error: "" });
+  const user = route.params.user;
 
-  const _onSignUpPressed = () => {
-    const nameError = nameValidator(name.value);
-    const emailError = emailValidator(email.value);
+  const _onSignUpPressed = async() => {
     const passwordError = passwordValidator(password.value);
+    const npasswordError = passwordValidator(npassword.value);
+    const cnpasswordError = passwordValidator(npassword.value);
 
-    if (emailError || passwordError || nameError) {
-      setName({ ...name, error: nameError });
-      setEmail({ ...email, error: emailError });
+    if (passwordError || npasswordError) {
       setPassword({ ...password, error: passwordError });
+      setnPassword({ ...npassword, error: npasswordError });
+      setCnPassword({ ...cnpassword, error: cnpasswordError });
       return;
     }
-
-    navigation.navigate('Dashboard');
+    const userValue = {
+      "username": user.phoneNumber,
+      "password": password.value
+    };
+    const loginResponse = await login(userValue);
+    if (loginResponse?.status===200) {
+      if (cnpassword.value===npassword.value) {
+        const newUser = {
+          id:user._id,
+          status: "true",
+          password: cnpassword.value,
+        };
+        const response = await updateUser(newUser,loginResponse.data.access_token);
+        console.log("response==>",response);
+        if(response){
+          navigation.navigate('LoginScreen');
+        }
+      }else{
+        setCnPassword({ ...cnpassword, error: "password and confirm password does not match" })
+      }
+    }else{
+      setPassword({ ...password, error: "password incorrect" })
+    }
   };
+
 
   return (
     <Background>
-      <BackButton goBack={() => navigation.navigate('HomeScreen')} />
+      <BackButton goBack={() => navigation.navigate("LoginScreen")} />
 
       <Logo />
 
-      <Header>Create Account</Header>
-
-      <TextInput
-        label="Name"
-        returnKeyType="next"
-        value={name.value}
-        onChangeText={text => setName({ value: text, error: '' })}
-        error={!!name.error}
-        errorText={name.error}
-      />
-
-      <TextInput
-        label="Email"
-        returnKeyType="next"
-        value={email.value}
-        onChangeText={text => setEmail({ value: text, error: '' })}
-        error={!!email.error}
-        errorText={email.error}
-        autoCapitalize="none"
-        textContentType="emailAddress"
-        keyboardType="email-address"
-      />
+      <Header>Register Account</Header>
 
       <TextInput
         label="Password"
         returnKeyType="done"
         value={password.value}
-        onChangeText={text => setPassword({ value: text, error: '' })}
+        onChangeText={(text) => setPassword({ value: text, error: "" })}
         error={!!password.error}
         errorText={password.error}
         secureTextEntry
       />
+      <TextInput
+        label="New npassword"
+        returnKeyType="done"
+        value={npassword.value}
+        onChangeText={(text) => setnPassword({ value: text, error: "" })}
+        error={!!npassword.error}
+        errorText={npassword.error}
+        secureTextEntry
+      />
+      <TextInput
+        label="Confirm your new npassword"
+        returnKeyType="done"
+        value={cnpassword.value}
+        onChangeText={(text) => setCnPassword({ value: text, error: "" })}
+        error={!!cnpassword.error}
+        errorText={cnpassword.error}
+        secureTextEntry
+      />
 
       <Button mode="contained" onPress={_onSignUpPressed} style={styles.button}>
-        Sign Up
+        Confirm
       </Button>
 
       <View style={styles.row}>
         <Text style={styles.label}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
+        <TouchableOpacity onPress={() => navigation.navigate("LoginScreen")}>
           <Text style={styles.link}>Login</Text>
         </TouchableOpacity>
       </View>
@@ -99,11 +121,11 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginTop: 4,
   },
   link: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: theme.colors.primary,
   },
 });

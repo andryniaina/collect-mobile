@@ -1,6 +1,6 @@
 import React, { memo, useState } from 'react';
 import { Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { emailValidator } from '../core/utils';
+import { emailValidator, nameValidator } from '../core/utils';
 import Background from '../components/Background';
 import BackButton from '../components/BackButton';
 import Logo from '../components/Logo';
@@ -9,6 +9,8 @@ import TextInput from '../components/TextInput';
 import { theme } from '../core/theme';
 import Button from '../components/Button';
 import { Navigation } from '../types';
+import {getUserByPhone,formatPassword } from '../services/users';
+
 
 type Props = {
   navigation: Navigation;
@@ -17,15 +19,19 @@ type Props = {
 const ForgotPasswordScreen = ({ navigation }: Props) => {
   const [email, setEmail] = useState({ value: '', error: '' });
 
-  const _onSendPressed = () => {
-    const emailError = emailValidator(email.value);
+  const _onSendPressed = async () => {
+    const emailError = nameValidator(email.value);
 
     if (emailError) {
       setEmail({ ...email, error: emailError });
       return;
     }
-
-    navigation.navigate('LoginScreen');
+    const user = await getUserByPhone(email.value);
+    const response = await formatPassword(user._id);
+    console.log("response==>",response);
+    if (response) {
+        navigation.navigate('LoginScreen'); 
+    }
   };
 
   return (
@@ -37,7 +43,7 @@ const ForgotPasswordScreen = ({ navigation }: Props) => {
       <Header>Restore Password</Header>
 
       <TextInput
-        label="E-mail address"
+        label="Phone Number"
         returnKeyType="done"
         value={email.value}
         onChangeText={text => setEmail({ value: text, error: '' })}

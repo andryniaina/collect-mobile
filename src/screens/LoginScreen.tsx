@@ -5,38 +5,42 @@ import Logo from '../components/Logo';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import TextInput from '../components/TextInput';
-import BackButton from '../components/BackButton';
 import {theme} from '../core/theme';
-import {emailValidator, passwordValidator} from '../core/utils';
-import {Navigation} from '../types';
-import { login } from '../services/users';
+import { login,getUserByPhone } from '../services/users';
 
 type Props = {
-  navigation: Navigation;
+  navigation: any;
+  route:any;
 };
 
-const LoginScreen = ({navigation}: Props) => {
+const LoginScreen = ({navigation,route}: Props) => {
   const [email, setEmail] = useState({value: '', error: ''});
   const [password, setPassword] = useState({value: '', error: ''});
 
   const _onLoginPressed = async() => {
-    const user = {
-      "username": email.value,
-      "password": password.value
-    };
-    const response = await login(user)
-    if(response?.status===200){
-      navigation.navigate('Dashboard');
+    const user = await getUserByPhone(email.value);
+    console.log("user==>",user);
+    if (user.status==="true") {
+      const userValue = {
+        "username": email.value,
+        "password": password.value
+      };
+      const response = await login(userValue)
+      console.log(response);
+      if(response?.status===200){
+        navigation.navigate('Dashboard');
+      }else{
+        setEmail({value:"",error:"Credential error"});
+        setPassword({value:"",error:"Credential error"});
+      } 
     }else{
-      setEmail({value:"",error:"Credential error"});
-      setPassword({value:"",error:"Credential error"});
+      navigation.navigate('RegisterScreen',{user});
     }
+    setPassword({value:"",error:""});
   };
 
   return (
     <Background>
-      <BackButton goBack={() => navigation.navigate('HomeScreen')} />
-
       <Logo />
 
       <Header>Welcome back.</Header>
@@ -63,21 +67,14 @@ const LoginScreen = ({navigation}: Props) => {
         secureTextEntry
       />
 
-      <View style={styles.forgotPassword}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('ForgotPasswordScreen')}>
-          <Text style={styles.label}>Forgot your password?</Text>
-        </TouchableOpacity>
-      </View>
-
       <Button mode="contained" onPress={_onLoginPressed}>
         Login
       </Button>
 
       <View style={styles.row}>
-        <Text style={styles.label}>Don’t have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('RegisterScreen')}>
-          <Text style={styles.link}>Sign up</Text>
+        <Text style={styles.label}>Forgot your password? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPasswordScreen')}>
+          <Text style={styles.link}>Click here</Text>
         </TouchableOpacity>
       </View>
     </Background>
