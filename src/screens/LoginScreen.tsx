@@ -8,6 +8,7 @@ import TextInput from '../components/TextInput';
 import {theme} from '../core/theme';
 import { login,getUserByPhone } from '../services/users';
 import * as Network from 'expo-network';
+import { insertUserToDatabase,loginUserFromDatabase } from '../config/sqlite/db';
 
 type Props = {
   navigation: any;
@@ -19,18 +20,22 @@ const LoginScreen = ({navigation,route}: Props) => {
   const [password, setPassword] = useState({value: '', error: ''});
 
   const _onLoginPressed = async() => {
+    let userValue = {
+      "id":"",
+      "username": email.value,
+      "password": password.value,
+      "token":""
+    };
     const netState=await Network.getNetworkStateAsync();
     if (netState.isConnected && netState.isInternetReachable) {
       const user = await getUserByPhone(email.value);
       console.log("user==>",user);
       if (user.status==="true") {
-        const userValue = {
-          "username": email.value,
-          "password": password.value
-        };
         const response = await login(userValue)
-        console.log(response);
         if(response?.status===200){
+          userValue.id = user._id;
+          userValue.token = response.data.access_token;
+          await insertUserToDatabase(userValue);
           navigation.navigate('Dashboard');
         }else{
           setEmail({value:"",error:"Credential error"});
@@ -40,7 +45,10 @@ const LoginScreen = ({navigation,route}: Props) => {
         navigation.navigate('RegisterScreen',{user});
       } 
     }else{
-      console.log("Login hors connexion");
+      const localLogin=await loginUserFromDatabase(userValue);
+      if (localLogin[0]) {
+        navigation.navigate('Dashboard');
+      }
     }
     setPassword({value:"",error:""});
   };

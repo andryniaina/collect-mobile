@@ -7,7 +7,8 @@ export const connectToDatabase = async () => {
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS Forms (_id TEXT PRIMARY KEY, version TEXT, name TEXT, fields TEXT, createdAt TEXT, updatedAt TEXT);
-CREATE TABLE IF NOT EXISTS FormDatas (_id TEXT PRIMARY KEY,formId TEXT,version TEXT, name TEXT,fields TEXT, createdAt TEXT, updatedAt TEXT,status TEXT)
+CREATE TABLE IF NOT EXISTS FormDatas (_id TEXT PRIMARY KEY,formId TEXT,version TEXT, name TEXT,fields TEXT, createdAt TEXT, updatedAt TEXT,status TEXT);
+CREATE TABLE IF NOT EXISTS Users (_id TEXT PRIMARY KEY, username TEXT, password TEXT, token TEXT);
 `);
 };
 
@@ -61,4 +62,24 @@ export const getFormDataToDatabaseByStatus = async (status: String) => {
     };
   });
   return allRowsParsed;
+};
+
+export const insertUserToDatabase = async (user: any) => {
+  const _id = user._id;
+  const username = user.username;
+  const password = user.password;
+  const token = JSON.stringify(user.token);
+  const result = await db.runAsync(`
+    INSERT OR REPLACE INTO Users (_id, username, password, token) VALUES ('${_id}','${username}','${password}','${token}')
+  `);
+  return result;
+};
+
+export const loginUserFromDatabase = async (user: any) => {
+  const username = user.username;
+  const password = user.password;
+  const allRows = await db.getAllAsync(
+    `SELECT * FROM Users WHERE username='${username}' AND password='${password}'`
+  );
+  return allRows;
 };
