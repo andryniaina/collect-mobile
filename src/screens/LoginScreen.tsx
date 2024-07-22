@@ -7,6 +7,7 @@ import Button from '../components/Button';
 import TextInput from '../components/TextInput';
 import {theme} from '../core/theme';
 import { login,getUserByPhone } from '../services/users';
+import * as Network from 'expo-network';
 
 type Props = {
   navigation: any;
@@ -18,23 +19,28 @@ const LoginScreen = ({navigation,route}: Props) => {
   const [password, setPassword] = useState({value: '', error: ''});
 
   const _onLoginPressed = async() => {
-    const user = await getUserByPhone(email.value);
-    console.log("user==>",user);
-    if (user.status==="true") {
-      const userValue = {
-        "username": email.value,
-        "password": password.value
-      };
-      const response = await login(userValue)
-      console.log(response);
-      if(response?.status===200){
-        navigation.navigate('Dashboard');
+    const netState=await Network.getNetworkStateAsync();
+    if (netState.isConnected && netState.isInternetReachable) {
+      const user = await getUserByPhone(email.value);
+      console.log("user==>",user);
+      if (user.status==="true") {
+        const userValue = {
+          "username": email.value,
+          "password": password.value
+        };
+        const response = await login(userValue)
+        console.log(response);
+        if(response?.status===200){
+          navigation.navigate('Dashboard');
+        }else{
+          setEmail({value:"",error:"Credential error"});
+          setPassword({value:"",error:"Credential error"});
+        } 
       }else{
-        setEmail({value:"",error:"Credential error"});
-        setPassword({value:"",error:"Credential error"});
+        navigation.navigate('RegisterScreen',{user});
       } 
     }else{
-      navigation.navigate('RegisterScreen',{user});
+      console.log("Login hors connexion");
     }
     setPassword({value:"",error:""});
   };
