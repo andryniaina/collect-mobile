@@ -18,3 +18,14 @@ export const nameValidator = (name: string) => {
 
   return '';
 };
+
+export const validateForm = (fields:any, formData:any) => {
+  const errors :any = {};
+  fields.forEach((field:any) => {
+    if (field.required && !formData[field.name]) {
+      errors[field.name] = "This field is required";
+    }
+  });
+  return errors;
+};
+

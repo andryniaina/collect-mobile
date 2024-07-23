@@ -12,7 +12,7 @@ const keyboardType: Record<string,KeyboardTypeOptions> = {
   "text": "default",
 }
 
-const InputField = ({type, name, setFormDatas,initialValue}: any) => {
+const InputField = ({type, name, setFormDatas,initialValue,error}: any) => {
   const [data, setData] = useState({value: "",error:""});
 
   const onChangeText = (text:string)=>{
@@ -31,6 +31,10 @@ const InputField = ({type, name, setFormDatas,initialValue}: any) => {
   useEffect(() => {
     setData({ value: initialValue, error: "" });
   }, [initialValue]);
+  
+  useEffect(() => {
+    setData((prevState) => ({...prevState, error: error}));
+  }, [error]);
 
   return (
     <TextInput
