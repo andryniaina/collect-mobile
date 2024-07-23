@@ -29,3 +29,16 @@ export const validateForm = (fields:any, formData:any) => {
   return errors;
 };
 
+export const checkConditions = (conditions:any, formData:any) => {
+  for (const condition of conditions) {
+    const { field, comparator, value } = condition;
+    if (comparator === "=" && formData[field] !== value) {
+      console.log("False");
+      return false;
+    }
+  }
+  console.log("True");
+  return true;
+};
+
+

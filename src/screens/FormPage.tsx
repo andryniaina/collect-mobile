@@ -10,7 +10,7 @@ import { insertFormDataToDatabase } from "../config/sqlite/db";
 import { useLocalFormDatas } from "../services/formDatas/formDatas.hook";
 import uuid from "react-native-uuid";
 import { useQueryClient } from "@tanstack/react-query";
-import { validateForm } from "../core/utils";
+import { validateForm ,checkConditions} from "../core/utils";
 
 interface Props {
   navigation: Navigation;
@@ -20,6 +20,7 @@ interface Props {
 const FormPage = ({ navigation, route }: Props) => {
   const [formDatas, setFormDatas] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>({});
+  const [visibleFields, setVisibleFields] = useState<any>({});
   const formId = route.params.formId;
   const status = route.params.status;
   const { data: forms } = useLocalForms(); // Fetch forms from local cache
@@ -30,12 +31,10 @@ const FormPage = ({ navigation, route }: Props) => {
   if (status === "fill") {
     const Form = forms?.find((form) => form._id === formId);
     selectedForm = Form;
-    //console.log(JSON.stringify(selectedForm));
     if (!Form) {
       return <Text>Form not found!</Text>;
     }
   } else if (status === "draft") {
-    // Find the selected form by formId
     console.log("Forms Data==>", JSON.stringify(formData));
     const Form = formData?.find((form: any) => form._id === formId);
     selectedForm = Form;
@@ -131,14 +130,19 @@ const FormPage = ({ navigation, route }: Props) => {
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
     } catch (error) {
-      console.error("Error saving form:", error);
+      console.error("Error saving form", error);
     }
   };
 
   return (
     <Background>
       <Header>{selectedForm.name}</Header>
-      {selectedForm?.fields?.map((field: any) => (
+      {selectedForm?.fields?.map((field: any) => {
+        let newVisibleFields= {...visibleFields};
+        newVisibleFields[field.name] = checkConditions(field.conditions, formDatas);
+        setVisibleFields(newVisibleFields);
+        if (!visibleFields[field.name]) return null;
+        return(
         <InputField
           key={field._id}
           type={field.type}
@@ -146,8 +150,8 @@ const FormPage = ({ navigation, route }: Props) => {
           setFormDatas={setFormDatas}
           initialValue={field.data || ""}
           error={formErrors[field.name]}
-        />
-      ))}
+        />)
+      })}
       <Button onPress={() => handleSave(formId)} mode="contained">
         Sauvegarder
       </Button>
