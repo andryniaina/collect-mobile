@@ -25,6 +25,20 @@ export const validateForm = (fields:any, formData:any) => {
     if (field.required && !formData[field.name]) {
       errors[field.name] = "This field is required";
     }
+    if (field.validation) {
+      const { comparator, value, message } = field.validation;
+      const fieldValue = formData[field.name];
+      switch (comparator) {
+        case "=":
+          if (fieldValue !== value) {
+            errors[field.name] = message || `Value must be equal to ${value}`;
+          }
+          break;
+        // Ajoutez d'autres comparateurs si nécessaire
+        default:
+          break;
+      }
+    }
   });
   return errors;
 };
@@ -33,11 +47,9 @@ export const checkConditions = (conditions:any, formData:any) => {
   for (const condition of conditions) {
     const { field, comparator, value } = condition;
     if (comparator === "=" && formData[field] !== value) {
-      console.log("False");
       return false;
     }
   }
-  console.log("True");
   return true;
 };
 

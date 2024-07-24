@@ -86,7 +86,6 @@ const FormPage = ({ navigation, route }: Props) => {
         updatedAt: currentDate,
         status: "draft",
       };
-      console.log("form==>", JSON.stringify(form));
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
     } catch (error) {
@@ -107,7 +106,6 @@ const FormPage = ({ navigation, route }: Props) => {
         })),
         updatedAt: currentDate,
       };
-      console.log("form==>", JSON.stringify(form));
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
     } catch (error) {
@@ -147,7 +145,6 @@ const FormPage = ({ navigation, route }: Props) => {
   };
 
   useEffect(() => {
-    console.log("************************Form******************");
     updateVisibleFields();
   }, [formDatas]);
 
