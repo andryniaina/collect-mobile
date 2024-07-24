@@ -20,37 +20,38 @@ const LoginScreen = ({navigation,route}: Props) => {
   const [password, setPassword] = useState({value: '', error: ''});
 
   const _onLoginPressed = async() => {
-    let userValue = {
-      "id":"",
-      "username": email.value,
-      "password": password.value,
-      "token":""
-    };
-    const netState=await Network.getNetworkStateAsync();
-    if (netState.isConnected && netState.isInternetReachable) {
-      const user = await getUserByPhone(email.value);
-      console.log("user==>",user);
-      if (user.status==="true") {
-        const response = await login(userValue)
-        if(response?.status===200){
-          userValue.id = user._id;
-          userValue.token = response.data.access_token;
-          await insertUserToDatabase(userValue);
-          navigation.navigate('Dashboard');
-        }else{
-          setEmail({value:"",error:"Credential error"});
-          setPassword({value:"",error:"Credential error"});
-        } 
-      }else{
-        navigation.navigate('RegisterScreen',{user});
-      } 
-    }else{
-      const localLogin=await loginUserFromDatabase(userValue);
-      if (localLogin[0]) {
-        navigation.navigate('Dashboard');
-      }
-    }
-    setPassword({value:"",error:""});
+    // let userValue = {
+    //   "id":"",
+    //   "username": email.value,
+    //   "password": password.value,
+    //   "token":""
+    // };
+    // const netState=await Network.getNetworkStateAsync();
+    // if (netState.isConnected && netState.isInternetReachable) {
+    //   const user = await getUserByPhone(email.value);
+    //   console.log("user==>",user);
+    //   if (user.status==="true") {
+    //     const response = await login(userValue)
+    //     if(response?.status===200){
+    //       userValue.id = user._id;
+    //       userValue.token = response.data.access_token;
+    //       await insertUserToDatabase(userValue);
+    //       navigation.navigate('Dashboard');
+    //     }else{
+    //       setEmail({value:"",error:"Credential error"});
+    //       setPassword({value:"",error:"Credential error"});
+    //     } 
+    //   }else{
+    //     navigation.navigate('RegisterScreen',{user});
+    //   } 
+    // }else{
+    //   const localLogin=await loginUserFromDatabase(userValue);
+    //   if (localLogin[0]) {
+    //     navigation.navigate('Dashboard');
+    //   }
+    // }
+    // setPassword({value:"",error:""});
+            navigation.navigate('Dashboard');
   };
 
   return (

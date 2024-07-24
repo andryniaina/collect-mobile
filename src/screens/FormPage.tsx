@@ -1,4 +1,4 @@
-import React, { memo, useState, version } from "react";
+import React, { memo, useEffect, useState, version } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Background from "../components/Background";
 import Header from "../components/Header";
@@ -10,7 +10,7 @@ import { insertFormDataToDatabase } from "../config/sqlite/db";
 import { useLocalFormDatas } from "../services/formDatas/formDatas.hook";
 import uuid from "react-native-uuid";
 import { useQueryClient } from "@tanstack/react-query";
-import { validateForm ,checkConditions} from "../core/utils";
+import { validateForm, checkConditions } from "../core/utils";
 
 interface Props {
   navigation: Navigation;
@@ -20,12 +20,12 @@ interface Props {
 const FormPage = ({ navigation, route }: Props) => {
   const [formDatas, setFormDatas] = useState<any>({});
   const [formErrors, setFormErrors] = useState<any>({});
-  const [visibleFields, setVisibleFields] = useState<any>({});
   const formId = route.params.formId;
   const status = route.params.status;
   const { data: forms } = useLocalForms(); // Fetch forms from local cache
   const { data: formData } = useLocalFormDatas();
   const queryClient = useQueryClient();
+  const [visibleFields, setVisibleFields] = useState<any>([]);
 
   let selectedForm: any;
   if (status === "fill") {
@@ -134,23 +134,37 @@ const FormPage = ({ navigation, route }: Props) => {
     }
   };
 
+  const updateVisibleFields = () => {
+      const newVisibleFields = selectedForm.fields.filter((field: any) =>
+        checkConditions(field.conditions, formDatas)
+      );
+      setVisibleFields(newVisibleFields);
+  };
+
+  const handleSetFormDatas = (newFormDatas: any) => {
+    setFormDatas(newFormDatas);
+    updateVisibleFields();
+  };
+
+  useEffect(() => {
+    console.log("************************Form******************");
+    updateVisibleFields();
+  }, [formDatas]);
+
   return (
     <Background>
       <Header>{selectedForm.name}</Header>
-      {selectedForm?.fields?.map((field: any) => {
-        let newVisibleFields= {...visibleFields};
-        newVisibleFields[field.name] = checkConditions(field.conditions, formDatas);
-        setVisibleFields(newVisibleFields);
-        if (!visibleFields[field.name]) return null;
-        return(
-        <InputField
-          key={field._id}
-          type={field.type}
-          name={field.name}
-          setFormDatas={setFormDatas}
-          initialValue={field.data || ""}
-          error={formErrors[field.name]}
-        />)
+      {visibleFields.map((field: any) => {
+        return (
+          <InputField
+            key={field._id}
+            type={field.type}
+            name={field.name}
+            setFormDatas={handleSetFormDatas}
+            initialValue={field.data || ""}
+            error={formErrors[field.name]}
+          />
+        );
       })}
       <Button onPress={() => handleSave(formId)} mode="contained">
         Sauvegarder
