@@ -1,21 +1,93 @@
 import React, { memo, useEffect, useState } from "react";
 import TextInput from "./TextInput";
-import { KeyboardTypeOptions, Text } from "react-native";
+import { KeyboardTypeOptions, Text, StyleSheet, View } from "react-native";
 import TimePicker from "./TimePicker";
 import DatePicker from "./DatePicker";
-
-interface Props {
-  type: string;
-  name: string;
-}
+import { theme } from "../core/theme";
+import Button from "../components/Button";
 
 const keyboardType: Record<string, KeyboardTypeOptions> = {
   number: "numeric",
   text: "default",
 };
 
-const InputField = ({ type, name, setFormDatas, initialValue, error }: any) => {
+const InputField = ({
+  type,
+  name,
+  setFormDatas,
+  initialValue,
+  error,
+  fields,
+  formDatas,
+}: any) => {
   const [data, setData] = useState({ value: "", error: "" });
+  const [calculatedValue, setCalculatedValue] = useState("");
+  const [calculateTrigger, setCalculateTrigger] = useState(false);
+
+  const calculateValue = (formula: string, formData: any) => {
+    try {
+      const variables = formula.match(/[a-zA-Z_]\w*/g) || [];
+      const numericFormData: any = {};
+      console.log("Variables:", variables);
+
+      for (let variable of variables) {
+        console.log("Variable:", variable);
+        console.log("FormData:", formData);
+        console.log("FormData[variable]:", formData[variable]);
+        if (formData[variable] === undefined || formData[variable] === "") {
+          return "Incomplete Data";
+        }
+        numericFormData[variable] = parseFloat(formData[variable]);
+        if (isNaN(numericFormData[variable])) {
+          return "Invalid Data";
+        }
+      }
+      let transformedFormula = formula;
+      for (let variable of variables) {
+        transformedFormula = transformedFormula.replace(
+          new RegExp(`\\b${variable}\\b`, "g"),
+          `result.${variable}`
+        );
+      }
+
+      console.log(
+        "Function :",
+        "formData",
+        `with(formData) { return ${transformedFormula}; }`
+      );
+      console.log("numericFormData:", numericFormData);
+      const result = new Function(
+        "result",
+        `{ return ${transformedFormula}; }`
+      )(numericFormData);
+      return result.toString();
+    } catch (error) {
+      console.error("Error calculating value: ", error);
+      return "Error";
+    }
+  };
+
+  useEffect(() => {
+    if (type === "calculate" && fields && calculateTrigger) {
+      console.log("Calculating value for", name);
+      const field = fields.find((f: any) => f.name === name);
+      console.log("Field:", field);
+      if (field && field.formula) {
+        const result = calculateValue(field.formula, formDatas);
+        console.log("Result:", result);
+        setCalculatedValue(result);
+        setFormDatas((prevForm: any) => {
+          let newFormData = prevForm;
+          newFormData[name] = result;
+          return newFormData;
+        });
+        setCalculateTrigger(false);
+      }
+    }
+  }, [calculateTrigger, type, fields, name]);
+  const handleTriggerCalculation = () => {
+    setCalculateTrigger(true);
+  };
 
   const onChangeText = (text: string) => {
     setData({ value: text, error: "" });
@@ -45,6 +117,18 @@ const InputField = ({ type, name, setFormDatas, initialValue, error }: any) => {
       />
     );
   }
+  if (type == "calculate") {
+    return (
+      <View style={styles.container}>
+        <Text>
+          {name}:{calculatedValue}
+        </Text>
+        <Button onPress={() => handleTriggerCalculation()} mode="contained">
+          Calculer
+        </Button>
+      </View>
+    );
+  }
 
   useEffect(() => {
     setData({ value: initialValue, error: "" });
@@ -68,3 +152,19 @@ const InputField = ({ type, name, setFormDatas, initialValue, error }: any) => {
 };
 
 export default memo(InputField);
+
+const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    marginVertical: 12,
+  },
+  input: {
+    backgroundColor: theme.colors.surface,
+  },
+  error: {
+    fontSize: 14,
+    color: theme.colors.error,
+    paddingHorizontal: 4,
+    paddingTop: 4,
+  },
+});

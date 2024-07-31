@@ -160,6 +160,8 @@ const FormPage = ({ navigation, route }: Props) => {
             setFormDatas={handleSetFormDatas}
             initialValue={field.data || ""}
             error={formErrors[field.name]}
+            fields={selectedForm.fields}
+            formDatas={formDatas}
           />
         );
       })}
