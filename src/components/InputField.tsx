@@ -5,6 +5,7 @@ import TimePicker from "./TimePicker";
 import DatePicker from "./DatePicker";
 import { theme } from "../core/theme";
 import Button from "../components/Button";
+import ImagePickerComponent from "./ImagePicker";
 
 const keyboardType: Record<string, KeyboardTypeOptions> = {
   number: "numeric",
@@ -19,6 +20,7 @@ const InputField = ({
   error,
   fields,
   formDatas,
+  navigation
 }: any) => {
   const [data, setData] = useState({ value: "", error: "" });
   const [calculatedValue, setCalculatedValue] = useState("");
@@ -126,6 +128,14 @@ const InputField = ({
         <Button onPress={() => handleTriggerCalculation()} mode="contained">
           Calculer
         </Button>
+      </View>
+    );
+  }
+
+  if (type == "photo") {
+    return (
+      <View style={{flex:1, width:"100%", marginVertical: 12}}>
+        <ImagePickerComponent name={name} />
       </View>
     );
   }

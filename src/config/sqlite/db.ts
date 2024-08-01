@@ -3,7 +3,7 @@ import * as SQLite from "expo-sqlite";
 let db: any;
 export const connectToDatabase = async () => {
   console.log("Loggin to db");
-  db = await SQLite.openDatabaseAsync("cDb");
+  db = await SQLite.openDatabaseAsync("cDb1");
   await db.execAsync(`
 PRAGMA journal_mode = WAL;
 CREATE TABLE IF NOT EXISTS Forms (_id TEXT PRIMARY KEY, version TEXT, name TEXT, fields TEXT, createdAt TEXT, updatedAt TEXT);

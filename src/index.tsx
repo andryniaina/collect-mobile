@@ -10,6 +10,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import DBProvider from './services/provider/DbProvider';
+import CameraPage from './components/Camera/CameraPage';
 
 
 const Stack = createNativeStackNavigator();
@@ -28,6 +29,7 @@ const App = (): React.JSX.Element => {
         <Stack.Screen name="BlankForms" component={BlankForms}  options={{ headerShown: false }} />
         <Stack.Screen name="FormPage" component={FormPage}  options={{ headerShown: false }} />
         <Stack.Screen name="HomeScreen" component={HomeScreen} options={{ headerShown: false }}/>
+        <Stack.Screen name="CameraPage" component={CameraPage} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
     </DBProvider>

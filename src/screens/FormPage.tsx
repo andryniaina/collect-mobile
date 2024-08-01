@@ -162,6 +162,7 @@ const FormPage = ({ navigation, route }: Props) => {
             error={formErrors[field.name]}
             fields={selectedForm.fields}
             formDatas={formDatas}
+            navigation={navigation}
           />
         );
       })}
