@@ -6,6 +6,9 @@ import DatePicker from "./DatePicker";
 import { theme } from "../core/theme";
 import Button from "../components/Button";
 import ImagePickerComponent from "./ImagePicker";
+import SelectOne from "./SelectOne";
+import SelectMultiple from "./SelectMultiple";
+import FilePickerComponent from "./FilePicker";
 
 const keyboardType: Record<string, KeyboardTypeOptions> = {
   number: "numeric",
@@ -20,7 +23,7 @@ const InputField = ({
   error,
   fields,
   formDatas,
-  navigation
+  navigation,
 }: any) => {
   const [data, setData] = useState({ value: "", error: "" });
   const [calculatedValue, setCalculatedValue] = useState("");
@@ -131,11 +134,37 @@ const InputField = ({
       </View>
     );
   }
+  if (type === "selectone") {
+    const field = fields.find((f: any) => f.name === name);
+    return (
+      <View style={styles.container}>
+        <Text>{name}</Text>
+        <SelectOne name={name} options={field.options} setFormDatas={setFormDatas} />
+      </View>
+    );
+  }
+
+  if (type === "selectMultiple") {
+    const field = fields.find((f: any) => f.name === name);
+    return (
+      <View style={styles.container}>
+        <Text>{name}</Text>
+        <SelectMultiple name={name} options={field.options} setFormDatas={setFormDatas} />
+      </View>
+    );
+  }
 
   if (type == "photo") {
     return (
-      <View style={{flex:1, width:"100%", marginVertical: 12}}>
-        <ImagePickerComponent name={name} />
+      <View style={{ flex: 1, width: "100%", marginVertical: 12 }}>
+        <ImagePickerComponent name={name} setFormDatas={setFormDatas} />
+      </View>
+    );
+  }
+  if (type == "file") {
+    return (
+      <View style={{ flex: 1, width: "100%", marginVertical: 12 }}>
+        <FilePickerComponent name={name} setFormDatas={setFormDatas} />
       </View>
     );
   }
