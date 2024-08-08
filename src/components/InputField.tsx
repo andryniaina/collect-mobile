@@ -36,9 +36,6 @@ const InputField = ({
       console.log("Variables:", variables);
 
       for (let variable of variables) {
-        console.log("Variable:", variable);
-        console.log("FormData:", formData);
-        console.log("FormData[variable]:", formData[variable]);
         if (formData[variable] === undefined || formData[variable] === "") {
           return "Incomplete Data";
         }
@@ -54,13 +51,6 @@ const InputField = ({
           `result.${variable}`
         );
       }
-
-      console.log(
-        "Function :",
-        "formData",
-        `with(formData) { return ${transformedFormula}; }`
-      );
-      console.log("numericFormData:", numericFormData);
       const result = new Function(
         "result",
         `{ return ${transformedFormula}; }`
@@ -76,7 +66,6 @@ const InputField = ({
     if (type === "calculate" && fields && calculateTrigger) {
       console.log("Calculating value for", name);
       const field = fields.find((f: any) => f.name === name);
-      console.log("Field:", field);
       if (field && field.formula) {
         const result = calculateValue(field.formula, formDatas);
         console.log("Result:", result);
@@ -171,6 +160,11 @@ const InputField = ({
 
   useEffect(() => {
     setData({ value: initialValue, error: "" });
+    setFormDatas((prevForm: any) => {
+      let newFormData = prevForm;
+      newFormData[name] = initialValue;
+      return newFormData;
+    });
   }, [initialValue]);
 
   useEffect(() => {

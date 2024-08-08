@@ -35,8 +35,8 @@ const FormPage = ({ navigation, route }: Props) => {
       return <Text>Form not found!</Text>;
     }
   } else if (status === "draft") {
-    console.log("Forms Data==>", JSON.stringify(formData));
     const Form = formData?.find((form: any) => form._id === formId);
+    console.log("FormData==>", JSON.stringify(Form));
     selectedForm = Form;
     if (!Form) {
       return <Text>Form not found!</Text>;
@@ -60,11 +60,15 @@ const FormPage = ({ navigation, route }: Props) => {
 
   const handleReadyToSave = async (formId: string) => {
     if (status === "fill") {
-      await onSaveFill(formId);
-      await onReadyToSend();
+      console.log("Fill******");
+      const formsaved :any = await onSaveFill(formId);
+      console.log("Fill******"+formsaved);
+      await onReadyToSend(formsaved);
     } else if (status === "draft") {
-      await onReadyToSend();
+      await onReadyToSend(selectedForm);
     }
+    queryClient.invalidateQueries({ queryKey: ["localFormDatas"] });
+    queryClient.invalidateQueries({ queryKey: ["localFormReadyDatas"] });
     navigation.navigate("Dashboard");
   };
 
@@ -86,8 +90,10 @@ const FormPage = ({ navigation, route }: Props) => {
         updatedAt: currentDate,
         status: "draft",
       };
+      console.log("ONSaveFillform===>", JSON.stringify(form));
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
+      return form;
     } catch (error) {
       console.error("Error saving form:", error);
     }
@@ -106,15 +112,18 @@ const FormPage = ({ navigation, route }: Props) => {
         })),
         updatedAt: currentDate,
       };
+      console.log("ONSaveDraftform===>", JSON.stringify(form));
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
     } catch (error) {
       console.error("Error saving form:", error);
     }
   };
-  const onReadyToSend = async () => {
+  const onReadyToSend = async (draftForm: any) => {
     try {
       console.log("Save draft");
+      selectedForm=draftForm;
+      console.log("selectedForm",selectedForm);
       const { fields, ...rest } = selectedForm;
       const form = {
         ...rest,
@@ -124,7 +133,7 @@ const FormPage = ({ navigation, route }: Props) => {
         })),
         status: "ready",
       };
-      console.log("form==>", JSON.stringify(form));
+      console.log("ONReadyToSendform===>", JSON.stringify(form));
       const response = await insertFormDataToDatabase(form);
       console.log("response==>", response);
     } catch (error) {

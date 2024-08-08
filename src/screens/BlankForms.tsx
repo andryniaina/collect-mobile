@@ -15,6 +15,7 @@ import { sendFormsDataToServer } from "../services/formDatas";
 import uuid from "react-native-uuid";
 import * as FileSystem from "expo-file-system";
 import { BACKEND_URL } from "../config/app.config";
+import { useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   navigation: any;
@@ -27,6 +28,7 @@ const Dashboard = ({ navigation, route }: Props) => {
   const { data: formReadyDatas } = useLocalFormReadyDatas();
   const { data: formSentDatas } = useLocalFormSentDatas();
   const status = route.params.status;
+  const queryClient = useQueryClient();
   let formsValue;
 
   if (isLoading) {
@@ -52,6 +54,8 @@ const Dashboard = ({ navigation, route }: Props) => {
       navigation.navigate("FormPage", { formId, status });
     } else if (status === "ready") {
       await onHandleSend(formId);
+      queryClient.invalidateQueries({ queryKey: ["localFormReadyDatas"] });
+      queryClient.invalidateQueries({ queryKey: ["localFormSentDatas"] });
     } else if (status === "sent") {
       console.log("sent");
     }
@@ -74,15 +78,18 @@ const Dashboard = ({ navigation, route }: Props) => {
       console.log("formData===>", JSON.stringify(Form));
       const form = {
         ...rest,
-        fields: fields.map((field: any) => {
-          return {
-            ...field,
-            data: Form[field.name],
-          };
-        }),
+        fields: await Promise.all(
+          fields.map(async (field: any) => {
+            if (field.type === "photo" || field.type === "file") {
+              const uri = field.data;
+              const uploadResponse :any = await uploadToMinio(uri);
+              field.data =`${Form.name}/${uploadResponse}`;
+            }
+            return field;
+          })
+        ),
         status: "sent",
       };
-      //console.log("form==>", JSON.stringify(form));
       const newId = uuid.v4();
       const formToSend: any = {
         _id: newId,
@@ -90,17 +97,17 @@ const Dashboard = ({ navigation, route }: Props) => {
         data: JSON.stringify(form.fields),
       };
       console.log("formToSend==>", JSON.stringify(formToSend));
-      // const serverResponse = await onSendToServer(formToSend);
-      // if (serverResponse) {
-      //   const response = await insertFormDataToDatabase(form);
-      //   console.log("response==>", response);
-      // }
+      const serverResponse = await onSendToServer(formToSend);
+      if (serverResponse) {
+        const response = await insertFormDataToDatabase(form);
+        console.log("response==>", response);
+      }
     } catch (error) {
       console.error("Error saving form:", error);
     }
   };
 
-  const uploadImage = async (image: any) => {
+  const uploadToMinio = async (image: any) => {
     if (image) {
       try {
         const response = await FileSystem.uploadAsync(
@@ -113,6 +120,9 @@ const Dashboard = ({ navigation, route }: Props) => {
           }
         );
         console.log(JSON.stringify(response, null, 4));
+        if (response) {
+          return response.body;
+        }
         return response;
       } catch (error) {
         console.log(error);

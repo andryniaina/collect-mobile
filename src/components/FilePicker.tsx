@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Image, View, StyleSheet, Text } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import Button from "../components/Button";
 import * as FileSystem from "expo-file-system";
 import * as DocumentPicker from "expo-document-picker";
 
-const imgDir = FileSystem.documentDirectory + "images/";
+const imgDir = FileSystem.documentDirectory + "files/";
 
 const ensureDirExists = async () => {
   try {
@@ -20,9 +19,20 @@ const ensureDirExists = async () => {
 };
 
 export default function FilePickerComponent({ name, setFormDatas }: any) {
+
+  const [path, setPath] = useState(null);
+
+  function getFileExtension(uri: string): string {
+    const fileName = uri ? uri.split('/').pop() : "filename";
+  
+    const extension = fileName?.split('.').pop();
+  
+    return extension && extension !== fileName ? extension : '';
+  }
+
   const saveDocument = async (uri: string) => {
     await ensureDirExists();
-    const filename = new Date().getTime().toString() + ".jpg";
+    const filename = new Date().getTime().toString() + `.${getFileExtension(uri)}`;
     const dest = imgDir + filename;
     await FileSystem.copyAsync({ from: uri, to: dest });
     return dest;
@@ -40,6 +50,7 @@ export default function FilePickerComponent({ name, setFormDatas }: any) {
 
   const handleSetDocument = async (uri: any) => {
     const newUri: any = await saveDocument(uri);
+    setPath(newUri);
     setFormDatas((prevForm: any) => {
       let newFormData = prevForm;
       newFormData[name] = newUri;
@@ -53,6 +64,7 @@ export default function FilePickerComponent({ name, setFormDatas }: any) {
       <Button onPress={pickDocument} mode="contained">
         Uploader un fichier
       </Button>
+      {path && <Text>Chemin du fichier:{path}</Text>}
     </View>
   );
 }
